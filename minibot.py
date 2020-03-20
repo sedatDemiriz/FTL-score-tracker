@@ -1,4 +1,5 @@
 from TwitchWebsocket import TwitchWebsocket
+import logging as lg
 import pandas as pd
 import re
 
@@ -31,7 +32,7 @@ class ftlScoreBot:
         return ("moderator" in m.tags["badges"] or "broadcaster" in m.tags["badges"] or "bloodlad_" == m.user.lower())
 
     # Handle score guesses and tally
-    def message_handler(self, m):  
+    def message_handler(self, m): 
 
         # Matching for score guess
         num_pat = re.compile('^[0-9]+')
@@ -51,6 +52,7 @@ class ftlScoreBot:
                 # Localize variables with appropriate typing
                 score = int(match.group())
                 username = str(m.user)
+                logger.info('Got a score match: %d.', score)
 
                 # Report guess is recieved
                 # self.ws.send_message("Score guess received: " + str(score) + " from: " + username)
@@ -58,30 +60,36 @@ class ftlScoreBot:
                 if username in self.df.User.values:
                     # If guess is from the same user, replace existing guess
                     self.df.loc[(self.df.User == username), 'Score'] = score
+                    logger.info('Replacing score guess from user: %s.', username)
                 else:
                     # Otherwise, add to the list
                     self.df = self.df.append({'User': username, 'Score': score}, ignore_index=True)
+                    logger.info('Adding score guess from user: %s.', username)
 
                 # For testing purposes
-                print(self.df); print()
+                #print(self.df); print()
             
             # If Moderator+ have put in correct score
             elif command and self.check_user_hard(m):
 
                 # Get correct score
                 correct = int(re.split(' ', command.group())[1])
+                logger.info('Recieved correct score: %d.', correct)
 
                 # Get differences from the correct score
                 self.df['Diff'] = abs(self.df['Score'] - correct)
                 self.df = self.df.sort_values('Diff')
+                logger.info('Calculating score differences.')
 
                 # Display winner
                 self.ws.send_message("Winner: " + self.df['User'].iloc[0] + " with " + str(self.df['Score'].iloc[0]))
+                logger.info('Reporting winner: %s.', self.df['User'].iloc[0])
 
                 # Drop all entries, guesses have ended
-                print(self.df); print()
+                # print(self.df); print()
                 self.df = self.df.iloc[0:0]
                 self.df = self.df.drop('Diff')
+                logger.info('Dropping all guesses from current round.')
 
             else:
                 pass  
@@ -92,4 +100,11 @@ class ftlScoreBot:
 
 # Start bot when launched from CLI
 if __name__ == "__main__":
+    
+    # Logging setup
+    lg.basicConfig(level=lg.INFO)
+    logger = lg.getLogger(__name__)
+    logger.info('Launching bot.')
+
+    # Launch bot
     ftlScoreBot()
