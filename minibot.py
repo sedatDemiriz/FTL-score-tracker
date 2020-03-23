@@ -1,13 +1,14 @@
 from TwitchWebsocket import TwitchWebsocket
 import logging as lg
 import pandas as pd
+import sys
 import re
 
 class ftlScoreBot:
-    def __init__(self):
+    def __init__(self, channel):
         self.host = "irc.chat.twitch.tv"
         self.port = 6667
-        self.chan = "#the_farb"
+        self.chan = "#" + str(channel)
         self.nick = "ftltrackerbot"
         self.auth = "oauth:19wyalzmxpekmfvne7off4l0y21jy5"
         
@@ -24,6 +25,7 @@ class ftlScoreBot:
 
         # Temporary dataframe for storing score guesses                                  
         self.df = pd.DataFrame(columns=['User', 'Score'])
+        logger.info('Connected to channel: '+ self.chan)
         self.ws.start_bot()
         # Any code after this will be executed after a KeyboardInterrupt
 
@@ -96,6 +98,7 @@ class ftlScoreBot:
                 
         # TODO: Implement error logging
         except:
+            logger.info('Encountered an error.')
             pass
 
 # Start bot when launched from CLI
@@ -106,5 +109,8 @@ if __name__ == "__main__":
     logger = lg.getLogger(__name__)
     logger.info('Launching bot.')
 
+    # Get the channel to join
+    channel2join = sys.argv[1]
+
     # Launch bot
-    ftlScoreBot()
+    ftlScoreBot(channel2join)

@@ -13,4 +13,5 @@ The guesses are then removed entirely, making space for a new guessing chain.
 
 * `pandas`
 * `re` (from std Python Lib)
+* `logging` (from std Python Lib)
 * `TwitchWebsocket` by Cubiedev
