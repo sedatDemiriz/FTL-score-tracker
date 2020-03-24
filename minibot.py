@@ -26,6 +26,11 @@ class ftlScoreBot:
         # Temporary dataframe for storing score guesses                                  
         self.df = pd.DataFrame(columns=['User', 'Score'])
 
+        # Patterns for score guesses and commands
+        self.num_pat = re.compile('^[0-9]+')
+        self.com_pat = re.compile('!score [0-9]+')
+
+        # Initialize bot function
         logger.info('Connected to channel: '+ self.chan)
         self.ws.start_bot()
         
@@ -44,17 +49,12 @@ class ftlScoreBot:
     # Handle score guesses and tally
     def message_handler(self, m):
 
-        # Matching for score guess
-        num_pat = re.compile('^[0-9]+')
-        # Matching for !score command
-        comm_pat = re.compile('!score [0-9]+')
-
         # Ignore network based errors
         try:                    
 
             # Check for patterns in message
-            match = num_pat.match(m.message)
-            command = comm_pat.match(m.message)
+            match = self.num_pat.match(m.message)
+            command = self.com_pat.match(m.message)
             
             # If a user guess is identified
             if match:
