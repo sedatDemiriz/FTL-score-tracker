@@ -44,7 +44,7 @@ class ftlScoreBot:
     # Display winner
     def report_winner(self, username, score):
         logger.info('Reporting winner: %s.', username)
-        self.ws.send_message("Winner: " + username + " with " + str(score))
+        self.ws.send_message("The winner is " + username + ": " + str(score))
 
     # Drop all values in given table
     def drop_all(self, df):
@@ -72,7 +72,7 @@ class ftlScoreBot:
     # Handle score guesses and tally
     def message_handler(self, m):
 
-        # Ignore network based errors
+        # Error handling
         try:                    
 
             # Check for patterns in message
@@ -115,7 +115,8 @@ class ftlScoreBot:
                     self.df = self.score_calc_price(self.df, correct)
 
                     # If there are valid guesses, display winner
-                    if len(self.df):                        
+                    if len(self.df):   
+                        # Display winner                     
                         self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
 
                         # Drop all entries, guesses have ended
@@ -124,13 +125,14 @@ class ftlScoreBot:
                     
                     # If no positive differences, report
                     else:                        
-                        logger.info('No guesses under the correct score.')
+                        logger.info('No guesses less than the correct score.')
                         self.ws.send_message('Nobody has guessed low enough.')                
 
             else:
                 # logger.info('Message didn\'t match any pattern.')
                 pass  
-                
+
+        # Report errors 
         except:
             logger.info('Encountered an error: '+ str(sys.exc_info()[0]))
 
