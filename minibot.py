@@ -48,7 +48,7 @@ class ftlScoreBot:
 
     # Drop all values in given table
     def drop_all(self, df):
-        self.df = df.iloc[0:0]
+        return df.iloc[0:0]
 
     # Calculate score differences
     def score_calc_reg(self, df, correct):
@@ -120,7 +120,7 @@ class ftlScoreBot:
                         self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
 
                         # Drop all entries, guesses have ended
-                        self.drop_all(self.df)
+                        self.df = self.drop_all(self.df)
                         logger.info('Dropping all guesses from current round.')
                     
                     # If no positive differences, report
