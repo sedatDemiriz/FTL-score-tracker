@@ -118,8 +118,7 @@ class ftlScoreBot:
                 
         # TODO: Implement error logging
         except:
-            logger.info('Encountered an error.')
-            pass
+            logger.info('Encountered an error: '+ sys.exc_info()[0])
 
 # Start bot when launched from CLI
 if __name__ == "__main__":
