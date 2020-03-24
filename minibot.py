@@ -46,8 +46,28 @@ class ftlScoreBot:
         logger.info('Reporting winner: %s.', username)
         self.ws.send_message("Winner: " + username + " with " + str(score))
 
+    # Drop all values in given table
     def drop_all(self, df):
         self.df = df.iloc[0:0]
+
+    # Calculate score differences
+    def score_calc_reg(self, df, correct):
+
+        logger.info('Calculating score differences: regular rules.')
+        df['Diff'] = abs(df['Score'] - correct)
+        df = df.sort_values('Diff')
+
+        return df
+
+    # Calculate score differences using price is right rules
+    def score_calc_price(self, df, correct):
+        
+        logger.info('Calculating score differences: price-is-right rules.')
+        df['Diff'] = correct - df['Score']
+        df = df[df['Diff'] >= 0]
+        df = df.sort_values('Diff')
+
+        return df
 
     # Handle score guesses and tally
     def message_handler(self, m):
@@ -78,40 +98,32 @@ class ftlScoreBot:
             
             # If Moderator+ have put in correct score
             elif command and self.check_user_hard(m) and len(self.df):
-
                 # Get correct score
                 correct = int(re.split(' ', command.group())[1])
                 logger.info('Recieved correct score: %d.', correct)
                 
                 # Decide what rules channel uses
                 if not (channel2join in price):
-
                     # Get differences from the correct score
-                    logger.info('Calculating score differences: regular rules.')
-                    self.df['Diff'] = abs(self.df['Score'] - correct)
-                    self.df = self.df.sort_values('Diff')
+                    self.df = self.score_calc_reg(self.df, correct)
                     
                     # Display winner
                     self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
                     
                 else:
-                
-                    # Get differences from correct score
-                    logger.info('Calculating score differences: price-is-right rules.')
-                    self.df['Diff'] = correct - self.df['Score']
-                    self.df = self.df[self.df['Diff'] >= 0]
-                    self.df = self.df.sort_values('Diff')
+                    # Get differences from the correct score
+                    self.df = self.score_calc_price(self.df, correct)
 
-                    if len(self.df):
-                        # If there are positive differences, display winner
+                    # If there are valid guesses, display winner
+                    if len(self.df):                        
                         self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
 
                         # Drop all entries, guesses have ended
                         self.drop_all(self.df)
                         logger.info('Dropping all guesses from current round.')
                     
-                    else:
-                        # If no positive differences, report
+                    # If no positive differences, report
+                    else:                        
                         logger.info('No guesses under the correct score.')
                         self.ws.send_message('Nobody has guessed low enough.')                
 
