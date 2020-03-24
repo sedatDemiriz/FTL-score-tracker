@@ -36,6 +36,11 @@ class ftlScoreBot:
     def check_user_hard(self, m):
         return ("moderator" in m.tags["badges"] or "broadcaster" in m.tags["badges"] or "bloodlad_" == m.user.lower())
 
+    # Display winner
+    def report_winner(self, username, score):
+        logger.info('Reporting winner: %s.', username)
+        self.ws.send_message("Winner: " + username + " with " + str(score))
+
     # Handle score guesses and tally
     def message_handler(self, m):
 
@@ -84,8 +89,7 @@ class ftlScoreBot:
                     self.df = self.df.sort_values('Diff')
                     
                     # Display winner
-                    logger.info('Reporting winner: %s.', self.df['User'].iloc[0])
-                    self.ws.send_message("Winner: " + self.df['User'].iloc[0] + " with " + str(self.df['Score'].iloc[0]))
+                    self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
                     
                 else:
                 
@@ -97,8 +101,7 @@ class ftlScoreBot:
 
                     if len(self.df):
                         # If there are positive differences, display winner
-                        logger.info('Reporting winner: %s.', self.df['User'].iloc[0])
-                        self.ws.send_message("Winner: " + self.df['User'].iloc[0] + " with " + str(self.df['Score'].iloc[0]))
+                        self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
 
                         # Drop all entries, guesses have ended
                         self.df = self.df.iloc[0:0]
