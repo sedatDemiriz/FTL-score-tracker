@@ -74,7 +74,7 @@ class ftlScoreBot:
                     logger.info('Adding score guess from user: %s.', username)
             
             # If Moderator+ have put in correct score
-            elif command and self.check_user_hard(m):
+            elif command and self.check_user_hard(m) and len(self.df):
 
                 # Get correct score
                 correct = int(re.split(' ', command.group())[1])
@@ -116,9 +116,8 @@ class ftlScoreBot:
                 # logger.info('Message didn\'t match any pattern.')
                 pass  
                 
-        # TODO: Implement error logging
         except:
-            logger.info('Encountered an error: '+ sys.exc_info()[0])
+            logger.info('Encountered an error: '+ str(sys.exc_info()[0]))
 
 # Start bot when launched from CLI
 if __name__ == "__main__":
