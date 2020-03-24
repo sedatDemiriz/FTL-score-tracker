@@ -46,6 +46,9 @@ class ftlScoreBot:
         logger.info('Reporting winner: %s.', username)
         self.ws.send_message("Winner: " + username + " with " + str(score))
 
+    def drop_all(self, df):
+        self.df = df.iloc[0:0]
+
     # Handle score guesses and tally
     def message_handler(self, m):
 
@@ -104,7 +107,7 @@ class ftlScoreBot:
                         self.report_winner(self.df['User'].iloc[0], self.df['Score'].iloc[0])
 
                         # Drop all entries, guesses have ended
-                        self.df = self.df.iloc[0:0]
+                        self.drop_all(self.df)
                         logger.info('Dropping all guesses from current round.')
                     
                     else:
